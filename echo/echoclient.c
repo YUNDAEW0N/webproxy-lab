@@ -1,5 +1,14 @@
 #include "csapp.h"
 
+void sigint_handler(int sig)
+{
+    if (SIGTSTP == sig)
+    {
+        exit(148);
+    }
+}
+
+
 int main(int argc, char **argv)
 {
     int clientfd;
@@ -16,6 +25,8 @@ int main(int argc, char **argv)
 
     clientfd = Open_clientfd(host,port);
     Rio_readinitb(&rio, clientfd);
+
+    signal(SIGTSTP,sigint_handler);
 
     while (Fgets(buf,MAXLINE, stdin) != NULL)
     {

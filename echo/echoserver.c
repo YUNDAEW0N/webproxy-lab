@@ -2,6 +2,14 @@
 
 void echo(int connfd);
 
+void sigint_handler(int sig)
+{
+    if (SIGTSTP == sig)
+    {
+        exit(148);
+    }
+}
+
 int main(int argc, char **argv)
 {
     int listenfd, connfd;
@@ -14,6 +22,8 @@ int main(int argc, char **argv)
         fprintf(stderr, "usage: %s <port>\n", argv[0]);
         exit(0);
     }
+
+    signal(SIGTSTP,sigint_handler);
 
     listenfd = Open_listenfd(argv[1]);
     while (1)
