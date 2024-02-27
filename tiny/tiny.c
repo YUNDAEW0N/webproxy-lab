@@ -11,7 +11,7 @@
 void doit(int fd);
 void read_requesthdrs(rio_t *rp);
 int parse_uri(char *uri, char *filename, char *cgiargs);
-void serve_static(int fd, char *filename, int filesize);
+void serve_static(int fd, char *filename, int filesize, char *method);
 void get_filetype(char *filename, char *filetype);
 void serve_dynamic(int fd, char *filename, char *cgiargs);
 void clienterror(int fd, char *cause, char *errnum, char *shortmsg,
@@ -57,8 +57,11 @@ void doit(int fd)
   sscanf(buf, "%s %s %s", method, uri, version);
   if (strcasecmp(method, "GET"))
   {
-    clienterror(fd, method, "501", "Not implementd", "Tiny does not implement this method");
-    return;
+    if(strcasecmp(method, "HEAD"))
+    {
+      clienterror(fd, method, "501", "Not implementd", "Tiny does not implement this method");
+      return;
+    }
   }
 
   read_requesthdrs(&rio);
@@ -77,7 +80,7 @@ void doit(int fd)
       clienterror(fd, filename, "403", "Not found", "Tiny couldn't read the file");
       return;
     }
-    serve_static(fd, filename, sbuf.st_size);
+    serve_static(fd, filename, sbuf.st_size,method);
   }
   else
   {
@@ -132,7 +135,7 @@ int parse_uri(char *uri, char *filename, char *cgiargs)
     return 0;
   }
 }
-void serve_static(int fd, char *filename, int filesize)
+void serve_static(int fd, char *filename, int filesize, char *method)
 {
   int srcfd;
   char *srcp, filetype[MAXLINE], buf[MAXBUF];
@@ -147,6 +150,8 @@ void serve_static(int fd, char *filename, int filesize)
   printf("Response headers:\n");
   printf("%s", buf);
 
+  if (strcasecmp(method, "HEAD"))
+  {
   srcfd = Open(filename, O_RDONLY, 0);
   srcp=(char*)malloc(filesize);
   Rio_readn(srcfd, srcp, filesize);
@@ -156,6 +161,7 @@ void serve_static(int fd, char *filename, int filesize)
   // Munmap(srcp, filesize);
   free(srcp);
   srcp = NULL;
+  }
 }
 void get_filetype(char *filename, char *filetype)
 {
