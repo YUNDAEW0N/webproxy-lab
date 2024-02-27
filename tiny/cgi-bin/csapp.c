@@ -153,7 +153,7 @@ handler_t *Signal(int signum, handler_t *handler)
 {
     struct sigaction action, old_action;
 
-    action.sa_handler = handler;
+    action.sa_handler = handler;  
     sigemptyset(&action.sa_mask); /* Block sigs of type being handled */
     action.sa_flags = SA_RESTART; /* Restart syscalls if possible */
 
